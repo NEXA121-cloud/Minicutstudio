@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniCut Studio</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #050816;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(56,189,248,.32), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(168,85,247,.35), transparent 32%),
+        radial-gradient(circle at 50% 90%, rgba(236,72,153,.25), transparent 35%),
+        linear-gradient(135deg, #050816 0%, #09090b 55%, #020617 100%);
+      z-index: -3;
+    }
+
+    .grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 70px 70px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+      z-index: -2;
+    }
+
+    .blob {
+      position: fixed;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: .45;
+      animation: float 8s ease-in-out infinite alternate;
+      z-index: -1;
+    }
+
+    .blob.one { background: #2563eb; top: 10%; left: 5%; }
+    .blob.two { background: #a855f7; top: 20%; right: 8%; animation-delay: 1.5s; }
+    .blob.three { background: #ec4899; bottom: 5%; left: 35%; animation-delay: 3s; }
+
+    @keyframes float {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(42px) scale(1.13); }
+    }
+
+    header {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -.5px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #38bdf8, #a855f7, #ec4899);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 30px rgba(56,189,248,.45);
+    }
+
+    .logo-icon::before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 15px solid white;
+      margin-left: 4px;
+    }
+
+    nav { display: flex; gap: 24px; align-items: center; }
+    nav a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 14px;
+      transition: .25s;
+    }
+    nav a:hover { color: white; }
+
+    .btn {
+      border: none;
+      outline: none;
+      padding: 14px 22px;
+      border-radius: 999px;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed, #ec4899);
+      box-shadow: 0 18px 45px rgba(124,58,237,.35);
+      transition: .25s;
+    }
+
+    .btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 25px 60px rgba(124,58,237,.5); }
+
+    .hero {
+      width: min(1180px, calc(100% - 40px));
+      margin: 48px auto 0;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 40px;
+      align-items: center;
+      min-height: 620px;
+    }
+
+    .badge {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: #cbd5e1;
+      margin-bottom: 24px;
+      backdrop-filter: blur(18px);
+    }
+
+    .badge span { color: #38bdf8; font-weight: 900; }
+
+    h1 {
+      font-size: clamp(48px, 7vw, 88px);
+      line-height: .94;
+      letter-spacing: -4px;
+      margin-bottom: 24px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: #cbd5e1;
+      font-size: 19px;
+      line-height: 1.75;
+      max-width: 640px;
+      margin-bottom: 30px;
+    }
+
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+
+    .ghost {
+      padding: 14px 22px;
+      border-radius: 999px;
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(16px);
+      transition: .25s;
+    }
+    .ghost:hover { background: rgba(255,255,255,.12); transform: translateY(-3px); }
+
+    .preview-card {
+      position: relative;
+      min-height: 520px;
+      border-radius: 34px;
+      background: rgba(15,23,42,.72);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 35px 100px rgba(0,0,0,.55);
+      overflow: hidden;
+      backdrop-filter: blur(24px);
+      transform: perspective(900px) rotateY(-8deg) rotateX(4deg);
+      animation: cardFloat 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes cardFloat {
+      from { transform: perspective(900px) rotateY(-8deg) rotateX(4deg) translateY(0); }
+      to { transform: perspective(900px) rotateY(-4deg) rotateX(2deg) translateY(-18px); }
+    }
+
+    .window-top {
+      height: 56px;
+      background: rgba(255,255,255,.06);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 18px;
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #ef4444; }
+    .dot.yellow { background: #f59e0b; }
+    .dot.green { background: #22c55e; }
+
+    .editor-screen {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 18px;
+    }
+
+    .tools {
+      display: grid;
+      gap: 14px;
+    }
+
+    .tool {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: #111827;
+      color: #38bdf8;
+      font-size: 22px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.07);
+    }
+
+    .video-box {
+      height: 310px;
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(56,189,248,.2), rgba(236,72,153,.18)),
+        #020617;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .play-big {
+      width: 92px;
+      height: 92px;
+      border-radius: 32px;
+      background: linear-gradient(135deg, #38bdf8, #a855f7, #ec4899);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 55px rgba(168,85,247,.7);
+    }
+
+    .play-big::before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 18px solid transparent;
+      border-bottom: 18px solid transparent;
+      border-left: 28px solid white;
+      margin-left: 8px;
+    }
+
+    .timeline {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .track {
+      height: 34px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .track span {
+      position: absolute;
+      inset: 0;
+      width: var(--w);
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--c1), var(--c2));
+      animation: timeline 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes timeline { to { width: calc(var(--w) + 12%); } }
+
+    section {
+      width: min(1180px, calc(100% - 40px));
+      margin: 100px auto;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(34px, 5vw, 56px);
+      letter-spacing: -2px;
+      margin-bottom: 18px;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: #94a3b8;
+      max-width: 720px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      font-size: 17px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature {
+      padding: 30px;
+      border-radius: 28px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(20px);
+      transition: .3s;
+    }
+
+    .feature:hover { transform: translateY(-8px); background: rgba(255,255,255,.1); }
+
+    .feature-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      font-size: 25px;
+      margin-bottom: 22px;
+      background: linear-gradient(135deg, #2563eb, #a855f7);
+    }
+
+    .feature h3 { font-size: 22px; margin-bottom: 12px; }
+    .feature p { color: #a1a1aa; line-height: 1.7; }
+
+    .download {
+      text-align: center;
+      padding: 70px 30px;
+      border-radius: 36px;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.24), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(236,72,153,.24), transparent 35%),
+        rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(24px);
+    }
+
+    .download h2 {
+      font-size: clamp(36px, 5vw, 64px);
+      letter-spacing: -2px;
+      margin-bottom: 18px;
+    }
+
+    .download p {
+      color: #cbd5e1;
+      font-size: 18px;
+      max-width: 720px;
+      margin: 0 auto 30px;
+      line-height: 1.7;
+    }
+
+    footer {
+      width: min(1180px, calc(100% - 40px));
+      margin: 50px auto 30px;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      display: flex;
+      justify-content: space-between;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      nav { display: none; }
+      .hero { grid-template-columns: 1fr; margin-top: 20px; }
+      .preview-card { transform: none; animation: none; min-height: 480px; }
+      .features { grid-template-columns: 1fr; }
+      h1 { letter-spacing: -2px; }
+      footer { flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid"></div>
+  <div class="blob one"></div>
+  <div class="blob two"></div>
+  <div class="blob three"></div>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <span>MiniCut Studio</span>
+    </div>
+    <nav>
+      <a href="#features">Özellikler</a>
+      <a href="#download">İndir</a>
+      <a href="#about">Hakkında</a>
+      <a class="btn" href="https://www.mediafire.com/file/3nng3qh0ogfsf2f/MiniCutStudioSetup.exe/file" target="_blank">Setup İndir</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <div>
+      <div class="badge"><span>●</span> Free Preview Build</div>
+      <h1>Video editini <span class="gradient-text">daha hızlı</span> yap.</h1>
+      <p>
+        MiniCut Studio; YouTube, Shorts, TikTok ve Instagram için tasarlanmış modern, efektli ve sade bir video düzenleme deneyimi sunar.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="https://www.mediafire.com/file/3nng3qh0ogfsf2f/MiniCutStudioSetup.exe/file" target="_blank">⬇ MiniCut Setup İndir</a>
+        <a class="ghost" href="#features">Özellikleri Gör</a>
+      </div>
+    </div>
+
+    <div class="preview-card">
+      <div class="window-top">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <div class="editor-screen">
+        <div class="tools">
+          <div class="tool">✂</div>
+          <div class="tool">T</div>
+          <div class="tool">♪</div>
+          <div class="tool">✦</div>
+        </div>
+        <div>
+          <div class="video-box">
+            <div class="play-big"></div>
+          </div>
+          <div class="timeline">
+            <div class="track"><span style="--w:68%;--c1:#38bdf8;--c2:#2563eb"></span></div>
+            <div class="track"><span style="--w:48%;--c1:#a855f7;--c2:#ec4899"></span></div>
+            <div class="track"><span style="--w:32%;--c1:#22c55e;--c2:#38bdf8"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section id="features">
+    <h2 class="section-title">Creator odaklı özellikler</h2>
+    <p class="section-subtitle">Tek ekranda video import et, efekt ver, yazı ekle, müzik koy ve MP4 olarak dışa aktar.</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🎬</div>
+        <h3>Platform Modları</h3>
+        <p>YouTube 16:9, Shorts 9:16, TikTok, Reels ve Instagram Post için hazır formatlar.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✨</div>
+        <h3>Efekt Paneli</h3>
+        <p>Blur, mirror, siyah-beyaz, parlaklık, kontrast, fade in/out ve hızlı düzenleme araçları.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔊</div>
+        <h3>Ses ve Müzik</h3>
+        <p>Videonun orijinal sesini koru, kapat veya müzik dosyasıyla birleştir.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="download">
+      <h2>MiniCut Studio hazır.</h2>
+      <p>Windows için setup dosyasını indir, kur ve sosyal medya videolarını düzenlemeye başla.</p>
+      <a class="btn" href="https://www.mediafire.com/file/3nng3qh0ogfsf2f/MiniCutStudioSetup.exe/file" target="_blank">⬇ MiniCutStudioSetup.exe İndir</a>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2 class="section-title">Basit. Güzel. Hızlı.</h2>
+    <p class="section-subtitle">MiniCut Studio şu anda ücretsiz önizleme sürümüdür. Proje gelişmeye devam ediyor; yeni efektler, presetler ve AI araçları yakında eklenebilir.</p>
+  </section>
+
+  <footer>
+    <span>© 2026 MiniCut Studio</span>
+    <span>Made for creators.</span>
+  </footer>
+</body>
+</html>
